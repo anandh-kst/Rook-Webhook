@@ -2,21 +2,23 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import router from "./routes/webhook.route.js";
+import cors from 'cors'
 
 dotenv.config();
 
 const app = express();
-
+app.use(cors())
 app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ limit: "5mb", extended: true }));
+app.use("/webhook/rook", router);
 
 mongoose
   .connect(process.env.MONGO_URI, {
-    dbName: process.env.DB_NAME || "rook_health",
+    dbName: process.env.DB_NAME || "rook",
   })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-app.use("/webhook/rook", router);
 
 app.get("/", (req, res) => {
   res.send("Rook Webhook API Running...");
