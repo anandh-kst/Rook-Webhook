@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import BodyHistory from "../models/body.model.js";
 import SleepHistory from "../models/sleep.model.js";
 import StepsHistory from "../models/steps.model.js";
+import PhysicalSummary from "../models/physical.model.js";
 
 const router = express.Router();
 
@@ -59,14 +60,32 @@ router.post("/", async (req, res) => {
         raw: req.body,
       });
     }
+    if (data_structure === "physical_summary") {
+      const summary = req.body.physical_health.summary.physical_summary;
+
+      await PhysicalSummary.create({
+        client_uuid,
+        user_id,
+        active_seconds: summary.activity.active_seconds_int,
+        rest_seconds: summary.activity.rest_seconds_int,
+        calories_expenditure: summary.calories.calories_expenditure_kcal_float,
+        calories_bmr: summary.calories.calories_basal_metabolic_rate_kcal_float,
+        steps: summary.distance.steps_int,
+        traveled_distance_meters:
+        summary.distance.traveled_distance_meters_float,
+        hr_avg: summary.heart_rate.hr_avg_bpm_int,
+        hr_rest: summary.heart_rate.hr_resting_bpm_int,
+        source: summary.metadata.sources_of_data_array?.[0],
+        datetime: summary.metadata.datetime_string,
+        raw: req.body,
+      });
+    }
 
     return res.json({ success: true });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to process Rook data" });
   }
 });
-
 
 export default router;
